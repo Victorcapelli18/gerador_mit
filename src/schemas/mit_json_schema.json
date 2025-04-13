@@ -1,0 +1,638 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "PeriodoApuracao": {
+        "type": "object",
+        "properties": {
+          "MesApuracao": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "AnoApuracao": {
+            "type": "integer",
+            "minimum": 2025
+          }
+        },
+        "required": ["MesApuracao", "AnoApuracao"]
+      },
+      "ListaEventosEspeciais": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "IdEvento": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "DiaEvento": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 31
+            },
+            "TipoEvento": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            }
+          },
+          "required": ["IdEvento", "DiaEvento", "TipoEvento"]
+        }
+      },
+      "DadosIniciais": {
+        "type": "object",
+        "properties": {
+          "SemMovimento": {"type": "boolean"},
+          "QualificacaoPj": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "TributacaoLucro": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7
+          },
+          "VariacoesMonetarias": {
+            "type": "integer",
+            "mininum": 1,
+            "maximum": 3
+          },
+          "RegimePisCofins": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "ResponsavelApuracao": {
+            "type": "object",
+            "properties": {
+              "CpfResponsavel": {"type": "string"},
+              "TelResponsavel": {
+                "type": "object",
+                "properties": {
+                  "Ddd": {"type": "string"},
+                  "NumTelefone": {"type": "string"}
+                },
+                "required": ["Ddd", "NumTelefone"]
+              },
+              "EmailResponsavel": {"type": "string"},
+              "RegistroCrc": {
+                "type": "object",
+                "properties": {
+                  "UfRegistro": {"type": "string"},
+                  "NumRegistro": {"type": "string"}
+                },
+                "required": ["UfRegistro", "NumRegistro"]
+              }
+            },
+            "required": ["CpfResponsavel"]
+          }
+        },
+        "required": ["SemMovimento", "QualificacaoPj", "ResponsavelApuracao"]
+      },
+      "Debitos": {
+        "type": "object",
+        "properties": {
+          "BalancoLucroReal": {"type": "boolean"},
+          "Irpj": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "AnoPostergado": {"type": "integer"},
+                    "TrimPostergado": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 4
+                    },
+                    "AnoDebito": {"type": "integer"},
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "AnoPostergado": {"type": "integer"},
+                    "TrimPostergado": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 4
+                    },
+                    "AnoDebito": {"type": "integer"},
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "Csll": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "AnoPostergado": {"type": "integer"},
+                    "TrimPostergado": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 4
+                    },
+                    "AnoDebito": {"type": "integer"},
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "AnoPostergado": {"type": "integer"},
+                    "TrimPostergado": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 4
+                    },
+                    "AnoDebito": {"type": "integer"},
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "Irrf": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "Ipi": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "CnpjEstabelecimento": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "CnpjEstabelecimento", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "CnpjEstabelecimento": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "CnpjEstabelecimento", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "Iof": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3
+                    },
+                    "CodigoMunicipioOuro": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3
+                    },
+                    "CodigoMunicipioOuro": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "PisPasep": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 31
+                    },
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 31
+                    },
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "Cofins": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 31
+                    },
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 31
+                    },
+                    "CnpjScp": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "ContribuicoesDiversas": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 31
+                    },
+                    "CnpjEstabelecimento": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 31
+                    },
+                    "CnpjEstabelecimento": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "Cpss": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3
+                    },
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "PaDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3
+                    },
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          },
+          "RetPagamentoUnificado": {
+            "type": "object",
+            "properties": {
+              "ListaDebitos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "IdEventoDebito": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "CnpjIncorporacao": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              },
+              "ListaDebitosAposEvento": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "IdDebito": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "CodigoDebito": {"type": "string"},
+                    "CnpjIncorporacao": {"type": "string"},
+                    "ValorDebito": {"type": "number"}
+                  },
+                  "required": ["IdDebito", "CodigoDebito", "ValorDebito"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "ListaSuspensoes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "TipoSuspensao": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2
+            },
+            "MotivoSuspensao": {
+              "type": "integer",
+              "enum": [1, 2, 4, 5, 8, 9, 10, 11, 12, 13]
+            },
+            "ComDeposito": {"type": "boolean"},
+            "NumeroProcesso": {"type": "string"},
+            "ProcessoTerceiro": {"type": "boolean"},
+            "DataDecisao": {"type": "integer"},
+            "VaraJudiciaria": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "CodigoMunicipioSj": {"type": "string"},
+            "ListaDebitosSuspensos": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "IdDebitoSuspenso": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "ValorSuspenso": {"type": "number"}
+                },
+                "required": ["IdDebitoSuspenso", "ValorSuspenso"]
+              }
+            }
+          },
+          "required": ["TipoSuspensao", "NumeroProcesso", "ListaDebitosSuspensos"]
+        }
+      }
+    },
+    "required": ["PeriodoApuracao", "DadosIniciais"]
+  }
