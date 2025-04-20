@@ -1,8 +1,8 @@
 import json
 import os
 from src.infrastructure.adapters.json_validator import validar_json
+from src.domain.services.gerador_mit_sercie import GeradorService
 from src.domain.entities.mit_entity import Mit, PeriodoApuracao
-
 
 
 
@@ -31,3 +31,20 @@ class GeradorMitUseCase:
                     debitos=self.service.montar_debitos(df_debitos),
                     lista_suspensoes=self.service.montar_suspensoes(df_susp)
                 )
+
+                valido, erro = validar_json(mit.dict(by_alias=True), self.json_schema)
+                if not valido:
+                    msg = f"Erro de validação para {nome}: {erro.message}"
+                    if msg not in self.erros_registrados:
+                        self.erros_registrados.add(msg)
+                        with open(os.path.join(self.pasta_saida, "erros_validacao.txt"), "a", encoding="utf-8") as f:
+                            f.write(msg + "\n")
+                    continue
+
+                periodo = f"{mit.periodo_apuracao.ano_apuracao}{str(mit.periodo_apuracao.mes_apuracao).zfill(2)}"
+                nome_arquivo = f"{nome}--MIT--{periodo}.json"
+                with open(os.path.join(self.pasta_saida, nome_arquivo), 'w', encoding='utf-8') as f:
+                    json.dump(mit.dict(by_alias=True), f, indent=4, ensure_ascii=False)
+
+            except Exception as e:
+                print(f"Erro ao gerar JSON para {nome}: {str(e)}")
