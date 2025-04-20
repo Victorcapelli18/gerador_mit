@@ -1,4 +1,4 @@
-from infrastructure.repositories.excel_mit_repository import ExcelMitRepository
+from src.infrastructure.repositories.excel_mit_repository import ExcelMitRepository
 
 
 
