@@ -41,7 +41,7 @@ class ExcelMapper:
             Debito(
                 empresa=linha["empresa"],
                 imposto=linha["imposto"],
-                id_debito=linha.get["id_debito"] or None,
+                id_debito=linha.get("id_debito") or None,
                 codigo_debito=int(linha["codigo_debito"]),
                 valor_debito=self._to_float(linha.get("valor_debito")),
                 pa_debito=linha.get["pa_debito"] or None,
