@@ -45,7 +45,7 @@ class Debitos(BaseModel):
     cpss: Imposto = Imposto()
 
 
-class DebtioSuspeno(BaseModel):
+class DebitoSuspeno(BaseModel):
     id_debito_suspeno: int = Field(..., ge=1)
     valor_suspenso: float
 
@@ -58,7 +58,7 @@ class Suspensao(BaseModel):
     data_decisao: Optional[int] = None
     vara_jucidiaria: Optional[int] = Field(..., ge=1)
     codigo_municipio_sj: Optional[str] = None
-    lista_debitos_suspensos: List[DebtioSuspeno]
+    lista_debitos_suspensos: List[DebitoSuspeno]
     
 
 class Mit(BaseModel):

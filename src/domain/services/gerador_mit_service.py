@@ -1,7 +1,7 @@
 from typing import Dict, List
 import pandas as pd
 from src.domain.entities.responsible_entity import ResponsavelApuracao, TelefoneResponsavel, RegistroCrc
-from src.domain.entities.mit_entity import DadosIniciais, Debito, Debitos, Imposto, DebtioSuspeno, Suspensao, Mit, PeriodoApuracao
+from src.domain.entities.mit_entity import DadosIniciais, Debito, Debitos, Imposto, DebitoSuspeno, Suspensao, Mit, PeriodoApuracao
 
 class GeradorService:
     def montar_dados_iniciais(self, dados: Dict) -> DadosIniciais:
@@ -73,7 +73,7 @@ class GeradorService:
                 )
 
             suspensoes_dict[num_proc].lista_debitos_suspensos.append(
-                DebtioSuspeno(
+                DebitoSuspeno(
                     id_debito_suspeno=int(row["id_debito_suspenso"]),
                     valor_suspenso=float(row["valor_suspenso"])
                 )

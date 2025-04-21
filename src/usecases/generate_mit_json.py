@@ -1,7 +1,7 @@
 import json
 import os
 from src.infrastructure.adapters.json_validator import validar_json
-from src.domain.services.gerador_mit_sercie import GeradorService
+from src.domain.services.gerador_mit_service import GeradorService
 from src.domain.entities.mit_entity import Mit, PeriodoApuracao
 
 
