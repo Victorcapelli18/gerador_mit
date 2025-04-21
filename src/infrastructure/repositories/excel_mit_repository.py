@@ -11,11 +11,11 @@ class ExcelMitRepository:
 
 
     def obter_empresas(self) -> list[str]:
-        return list({linha["empresa"] for linha in self.dados["DadosIniciais"]})
+        return list({linha["Empresa"] for linha in self.dados["DadosIniciais"]})
     
 
     def carregar_dados(self, empresa: str):
-        filtro = lambda d: d["empresa"] == empresa
+        filtro = lambda d: d["Empresa"] == empresa
 
         dados_periodo = list(filter(filtro, self.dados["PeriodoApuracao"]))
         dados_iniciais = list(filter(filtro, self.dados["DadosIniciais"]))
@@ -28,33 +28,3 @@ class ExcelMitRepository:
             pd.DataFrame(dados_debitos),
             pd.DataFrame(dados_suspensoes),
         )
-    
-
-
-
-# if __name__ == "__main__":
-#     caminho = r"C:\Users\victo\OneDrive\Documentos\json_tests\planilha_mit_final_v5.xlsx"
-#     repo = ExcelMitRepository(caminho)
-
-
-
-#     empresas = repo.obter_empresas()
-#     print(empresas)
-
-
-#     if empresas:
-#         empresa = empresas[0]
-#         print(f"\n=== Dados da empresa: {empresa} ===")
-#         periodo, dados_iniciais, debitos, suspensoes = repo.carregar_dados(empresa)
-
-#         print("\n-> Período de Apuração:")
-#         print(periodo)
-
-#         print("\n-> Dados Iniciais:")
-#         print(dados_iniciais)
-
-#         print("\n-> Débitos (head):")
-#         print(debitos.head())
-
-#         print("\n-> Suspensões (head):")
-#         print(suspensoes.head())

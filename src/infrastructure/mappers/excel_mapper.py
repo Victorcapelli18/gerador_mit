@@ -1,4 +1,4 @@
-from domain.entities.excel_data_entity import PeriodoApuracao, DadosIniciais, Debito, Suspensao
+from src.domain.entities.excel_data_entity import PeriodoApuracao, DadosIniciais, Debito, Suspensao
 from typing import List
 from datetime import datetime
 
@@ -7,10 +7,10 @@ class ExcelMapper:
     def map_periodo_apuracao(self, dados: List[dict]) -> List[PeriodoApuracao]:
         return [
             PeriodoApuracao(
-                empresa=linha["empresa"],
-                cnpj=linha["cnpj"],
-                mes_apuracao=int(linha["mes_apuracao"]),
-                ano_apuracao=int(linha["ano_apuracao"]),
+                empresa=linha["Empresa"],
+                cnpj=linha["CNPJ"],
+                mes_apuracao=int(linha["MesApuracao"]),
+                ano_apuracao=int(linha["AnoApuracao"]),
 
             )
             for linha in dados
@@ -19,18 +19,18 @@ class ExcelMapper:
     def map_dados_iniciais(self, dados: List[dict]) -> List[DadosIniciais]:
         return [
             DadosIniciais(
-                empresa=linha["empresa"],
-                sem_movimento=self._to_bool(linha["sem_movimento"]),
-                qualificacao_pj=int(linha["qualificacao_pj"]),
-                tributacao_lucro=int(linha["tributacao_lucro"]),
-                variacoes_monetarias=int(linha["variacoes_monetarias"]),
-                regime_pis_cofins=int(linha["regime_pis_cofins"]),
-                cpf_responsavel=linha["tributacao_lucro"],
-                uf_registro=linha["uf_registro"],
-                num_registro=linha["num_registro"],
-                ddd=int(linha["ddd"]),
-                num_telefone=int(linha["num_telefone"]),
-                email_responsavel=linha["email_responsavel"],
+                empresa=linha["Empresa"],
+                sem_movimento=self._to_bool(linha["SemMovimento"]),
+                qualificacao_pj=int(linha["QualificacaoPj"]),
+                tributacao_lucro=int(linha["TributacaoLucro"]),
+                variacoes_monetarias=int(linha["VariacoesMonetarias"]),
+                regime_pis_cofins=int(linha["RegimePisCofins"]),
+                cpf_responsavel=linha["CpfResponsavel"],
+                uf_registro=linha["UfRegistro"],
+                num_registro=linha["NumRegistro"],
+                ddd=int(linha["Ddd"]),
+                num_telefone=int(linha["NumTelefone"]),
+                email_responsavel=linha["EmailResponsavel"],
 
             )
             for linha in dados
@@ -39,14 +39,14 @@ class ExcelMapper:
     def map_debitos(self, dados: List[dict]) -> List[Debito]:
         return [
             Debito(
-                empresa=linha["empresa"],
-                imposto=linha["imposto"],
-                id_debito=linha.get("id_debito") or None,
-                codigo_debito=int(linha["codigo_debito"]),
-                valor_debito=self._to_float(linha.get("valor_debito")),
-                pa_debito=linha.get["pa_debito"] or None,
-                codigo_municipio_ouro=linha.get["codigo_municipio_ouro"] or None,
-                cnpj_estabelecimento=linha.get["cnpj_estabelecimento"] or None,
+                empresa=linha["Empresa"],
+                imposto=linha["Imposto"],
+                id_debito=linha.get("IdDebito") or None,
+                codigo_debito=int(linha["CodigoDebito"]),
+                valor_debito=self._to_float(linha.get("ValorDebito")),
+                pa_debito=linha.get["PaDebito"] or None,
+                codigo_municipio_ouro=linha.get["CodigoMunicipioOuro"] or None,
+                cnpj_estabelecimento=linha.get["CnpjEstabelecimento"] or None,
 
             )
             for linha in dados
@@ -55,17 +55,17 @@ class ExcelMapper:
     def map_suspensoes(self, dados: List[dict]) -> List[Suspensao]:
         return [
             Suspensao(
-                empresa=linha["empresa"],
-                tipo_suspensao=linha["tipo_suspensao"],
-                motivo_suspensao=linha["motivo_suspensao"],
-                com_deposito=self._to_bool_or_none(linha.get("com_deposito")),
-                numero_processo=linha.get("numero_processo") or None,
-                processo_terceiro=linha.get("processo_terceiro") or None,
-                data_decisao=self._to_date_or_none(linha.get("data_decisao")),
-                vara_judiciaria=linha.get("vara_judiciaria") or None,
-                codigo_municipio_sj=linha.get("codigo_municipio_sj") or None,
-                id_debito_suspenso=linha.get("id_debito_suspenso") or None,
-                valor_suspenso=self._to_float(linha.get("valor_suspenso")),
+                empresa=linha["Empresa"],
+                tipo_suspensao=linha["TipoSuspensao"],
+                motivo_suspensao=linha["MotivoSuspensao"],
+                com_deposito=self._to_bool_or_none(linha.get("ComDeposito")),
+                numero_processo=linha.get("NumeroProcesso") or None,
+                processo_terceiro=linha.get("ProcessoTerceiro") or None,
+                data_decisao=self._to_date_or_none(linha.get("DataDecisao")),
+                vara_judiciaria=linha.get("VaraJudiciaria") or None,
+                codigo_municipio_sj=linha.get("CodigoMunicipioSj") or None,
+                id_debito_suspenso=linha.get("IdDebitoSuspenso") or None,
+                valor_suspenso=self._to_float(linha.get("ValorSuspenso")),
             )
             for linha in dados
         ]
