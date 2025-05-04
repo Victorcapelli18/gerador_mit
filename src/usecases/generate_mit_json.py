@@ -24,8 +24,8 @@ class GeradorMitUseCase:
 
                 mit = Mit(
                     periodo_apuracao=PeriodoApuracao(
-                        mes_apuracao=periodo_row["mes_apuracao"],
-                        ano_apuracao=periodo_row["ano_apuracao"]
+                        mes_apuracao=periodo_row["MesApuracao"],
+                        ano_apuracao=periodo_row["AnoApuracao"]
                     ),
                     dados_iniciais=self.service.montar_dados_iniciais(dados_row),
                     debitos=self.service.montar_debitos(df_debitos),
