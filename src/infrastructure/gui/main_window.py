@@ -3,14 +3,15 @@ import json
 import customtkinter as ctk
 from tkinter import filedialog
 from tkinter.messagebox import showinfo
-from src.usecases.generate_mit_json import GeradorMitUseCase
-from src.infrastructure.repositories.excel_mit_repository import ExcelMitRepository
+from src.infrastructure.gui.presenter import MitPresenter, ViewInterface
 from .widgets import criar_widgets
 
 
-class MainWindow:
+class MainWindow(ViewInterface):
     def __init__(self):
         self.schema = self.carregar_schema()
+        self.presenter = MitPresenter(self)
+        self.presenter.definir_schema(self.schema)
         self.setup_ui()
 
     def setup_ui(self):
@@ -25,8 +26,6 @@ class MainWindow:
 
     def carregar_schema(self):
         try:
-            # O arquivo atual (main_window.py) está em src/infrastructure/gui/
-            # O schema (mit_json_schema.json) está em src/schemas/
             current_file_dir = os.path.dirname(__file__) 
             infrastructure_dir = os.path.dirname(current_file_dir)
             src_dir = os.path.dirname(infrastructure_dir) 
@@ -47,41 +46,34 @@ class MainWindow:
     def selecionar_excel(self):
         caminho = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
         if caminho:
-            self.excel_path = caminho
+            self.presenter.definir_caminho_excel(caminho)
             self.excel_label.configure(text=caminho)
 
     def selecionar_pasta_saida(self):
         pasta = filedialog.askdirectory()
         if pasta:
-            self.output_path = pasta
+            self.presenter.definir_pasta_saida(pasta)
             self.output_label.configure(text=pasta)
 
     def gerar_json(self):
-        if not hasattr(self, 'excel_path') or not hasattr(self, 'output_path'):
-            showinfo("Erro", "Selecione o arquivo e a pasta de saída!")
-            return
-
-        try:
-            self.progressbar.pack()
-            self.progressbar.set(0)
-            
-            # Criar o callback para atualizar a barra de progresso
-            def atualizar_progresso(valor):
-                self.progressbar.set(valor)
-                # Forçar a atualização da interface após cada mudança na barra
-                self.root.update_idletasks()
-
-            repository = ExcelMitRepository(self.excel_path)
-            usecase = GeradorMitUseCase(repository, self.output_path, self.schema, progress_callback=atualizar_progresso)
-            usecase.executar()
-
-            showinfo("Sucesso", "Arquivos gerados com sucesso!")
-
-        except Exception as e:
-            showinfo("Erro", f"Falha na geração: {str(e)}")
-
-        finally:
-            self.progressbar.pack_forget()
+        self.presenter.gerar_json()
+    
+    # Implementação da interface ViewInterface
+    def mostrar_erro(self, mensagem: str) -> None:
+        showinfo("Erro", mensagem)
+        
+    def mostrar_sucesso(self, mensagem: str) -> None:
+        showinfo("Sucesso", mensagem)
+        
+    def atualizar_progresso(self, valor: float) -> None:
+        self.progressbar.set(valor)
+        self.root.update_idletasks()
+        
+    def mostrar_progresso(self) -> None:
+        self.progressbar.pack()
+        
+    def esconder_progresso(self) -> None:
+        self.progressbar.pack_forget()
 
     def run(self):
         self.root.mainloop()

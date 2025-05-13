@@ -3,9 +3,12 @@ import os
 from src.infrastructure.adapters.json_validator import validar_json
 # from src.domain.services.gerador_mit_service import GeradorService # Removido
 from src.domain.entities.mit_entity import Mit # PeriodoApuracao não é mais necessário aqui diretamente
+from src.domain.repositories.mit_repository_interface import MitRepositoryInterface
+from typing import Optional, Callable
 
 class GeradorMitUseCase:
-    def __init__(self, repository, pasta_saida: str, json_schema: dict, progress_callback=None):
+    def __init__(self, repository: MitRepositoryInterface, pasta_saida: str, json_schema: dict, 
+                 progress_callback: Optional[Callable[[float], None]] = None):
         self.repository = repository
         self.pasta_saida = pasta_saida
         self.json_schema = json_schema
@@ -28,58 +31,33 @@ class GeradorMitUseCase:
                     progresso = idx / total_empresas
                     self.progress_callback(progresso)
                 
-                # O repositório agora retorna o objeto Mit completo
+                # O repositório retorna o objeto Mit completo
                 mit_obj = self.repository.carregar_dados(nome_empresa)
 
-                if not mit_obj: # Adicionando uma verificação caso o mapper retorne None (embora ele levante erro atualmente)
+                if not mit_obj:
                     print(f"Não foi possível carregar dados para a empresa: {nome_empresa}")
                     continue
 
-                # A construção manual do mit_obj e o uso do service foram removidos
-                # pois mit_obj já é a entidade Mit completa.
-
-                # Usar mit_obj.model_dump() para Pydantic v2+ ou mit_obj.dict() para v1
-                # Assumindo Pydantic v1 com base no uso de .dict(by_alias=True)
+                # Validar o JSON contra o schema
                 mit_dict_para_validar = mit_obj.dict(by_alias=True)
-                
                 valido, erro_val = validar_json(mit_dict_para_validar, self.json_schema)
                 
                 if not valido:
-                    msg = f"Erro de validação para {nome_empresa}: {str(erro_val)}" # Usar str(erro_val) pois o erro pode não ter .message
-                    if hasattr(erro_val, 'message'): # Checagem se tem o atributo message
-                        msg = f"Erro de validação para {nome_empresa}: {erro_val.message}"
-                    
-                    if msg not in self.erros_registrados:
-                        self.erros_registrados.add(msg)
-                        caminho_erro = os.path.join(self.pasta_saida, "erros_validacao.txt")
-                        with open(caminho_erro, "a", encoding="utf-8") as f_erro:
-                            f_erro.write(msg + "\n")
-                    print(msg) # Adicionado print para feedback imediato no console
+                    self._registrar_erro_validacao(nome_empresa, erro_val)
                     continue
 
-                # Construção do nome do arquivo JSON
-                ano = mit_obj.periodo_apuracao.ano_apuracao
-                mes = str(mit_obj.periodo_apuracao.mes_apuracao).zfill(2)
-                periodo_str = f"{ano}{mes}"
-                
-                nome_arquivo = f"{nome_empresa}--MIT--{periodo_str}.json"
+                # Usar o método da entidade para gerar o nome do arquivo
+                nome_arquivo = mit_obj.gerar_nome_arquivo(nome_empresa)
                 caminho_arquivo_saida = os.path.join(self.pasta_saida, nome_arquivo)
 
+                # Salvar o arquivo JSON
                 with open(caminho_arquivo_saida, 'w', encoding='utf-8') as f_json:
-                    # Usar mit_obj.model_dump_json() para Pydantic v2+ ou json.dump(mit_obj.dict()) para v1
                     json.dump(mit_dict_para_validar, f_json, indent=4, ensure_ascii=False)
                 
                 print(f"JSON gerado para {nome_empresa} em {caminho_arquivo_saida}")
 
             except Exception as e:
-                erro_msg = f"Erro crítico ao processar empresa {nome_empresa}: {str(e)}"
-                print(erro_msg)
-                # Logar também no arquivo de erros
-                caminho_erro_critico = os.path.join(self.pasta_saida, "erros_criticos_processamento.txt")
-                if erro_msg not in self.erros_registrados: # Evitar duplicar se já logado
-                    self.erros_registrados.add(erro_msg)
-                    with open(caminho_erro_critico, "a", encoding="utf-8") as f_critico:
-                        f_critico.write(erro_msg + "\n")
+                self._registrar_erro_critico(nome_empresa, e)
             
             # Atualiza o progresso após processar cada empresa
             if self.progress_callback:
@@ -89,3 +67,27 @@ class GeradorMitUseCase:
         # Garante que chegue a 100% no final
         if self.progress_callback:
             self.progress_callback(1.0)
+            
+    def _registrar_erro_validacao(self, nome_empresa: str, erro_val) -> None:
+        """Registra um erro de validação em arquivo."""
+        msg = f"Erro de validação para {nome_empresa}: {str(erro_val)}"
+        if hasattr(erro_val, 'message'):
+            msg = f"Erro de validação para {nome_empresa}: {erro_val.message}"
+        
+        if msg not in self.erros_registrados:
+            self.erros_registrados.add(msg)
+            caminho_erro = os.path.join(self.pasta_saida, "erros_validacao.txt")
+            with open(caminho_erro, "a", encoding="utf-8") as f_erro:
+                f_erro.write(msg + "\n")
+        print(msg)
+        
+    def _registrar_erro_critico(self, nome_empresa: str, erro: Exception) -> None:
+        """Registra um erro crítico em arquivo."""
+        erro_msg = f"Erro crítico ao processar empresa {nome_empresa}: {str(erro)}"
+        print(erro_msg)
+        
+        caminho_erro_critico = os.path.join(self.pasta_saida, "erros_criticos_processamento.txt")
+        if erro_msg not in self.erros_registrados:
+            self.erros_registrados.add(erro_msg)
+            with open(caminho_erro_critico, "a", encoding="utf-8") as f_critico:
+                f_critico.write(erro_msg + "\n")

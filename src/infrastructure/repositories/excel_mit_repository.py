@@ -1,16 +1,18 @@
 from src.infrastructure.adapters.excel_adapter import ExcelAdapter
 from src.infrastructure.mappers.excel_mapper import ExcelMapper
 from src.domain.entities.mit_entity import Mit
+from src.domain.repositories.mit_repository_interface import MitRepositoryInterface
+from typing import List, Optional
 
 
-class ExcelMitRepository:
+class ExcelMitRepository(MitRepositoryInterface):
     def __init__(self, caminho_arquivo: str):
         self.adapter = ExcelAdapter()
         self.mapper = ExcelMapper()
         # self.dados é um Dict[str, List[Dict]] carregado pelo adapter
         self.dados = self.adapter.carregar_planilha_excel(caminho_arquivo)
 
-    def obter_empresas(self) -> list[str]:
+    def obter_empresas(self) -> List[str]:
         # Mais robusto para o caso de "DadosIniciais" não existir ou linha sem "Empresa"
         return list(set(
             linha["Empresa"] 
@@ -18,7 +20,7 @@ class ExcelMitRepository:
             if "Empresa" in linha
         ))
     
-    def carregar_dados(self, empresa: str) -> Mit:
+    def carregar_dados(self, empresa: str) -> Optional[Mit]:
         # Filtro para os dados da empresa especificada
         # Usar .get() no dicionário da linha para segurança caso a coluna "Empresa" falte em alguma linha por erro
         filtro_empresa = lambda linha_dict: linha_dict.get("Empresa") == empresa
