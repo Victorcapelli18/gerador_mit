@@ -64,12 +64,17 @@ class MainWindow:
         try:
             self.progressbar.pack()
             self.progressbar.set(0)
+            
+            # Criar o callback para atualizar a barra de progresso
+            def atualizar_progresso(valor):
+                self.progressbar.set(valor)
+                # Forçar a atualização da interface após cada mudança na barra
+                self.root.update_idletasks()
 
             repository = ExcelMitRepository(self.excel_path)
-            usecase = GeradorMitUseCase(repository, self.output_path, self.schema)
+            usecase = GeradorMitUseCase(repository, self.output_path, self.schema, progress_callback=atualizar_progresso)
             usecase.executar()
 
-            self.progressbar.set(1)
             showinfo("Sucesso", "Arquivos gerados com sucesso!")
 
         except Exception as e:

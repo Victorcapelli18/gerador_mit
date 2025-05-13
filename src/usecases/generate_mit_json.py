@@ -5,12 +5,13 @@ from src.infrastructure.adapters.json_validator import validar_json
 from src.domain.entities.mit_entity import Mit # PeriodoApuracao não é mais necessário aqui diretamente
 
 class GeradorMitUseCase:
-    def __init__(self, repository, pasta_saida: str, json_schema: dict):
+    def __init__(self, repository, pasta_saida: str, json_schema: dict, progress_callback=None):
         self.repository = repository
         self.pasta_saida = pasta_saida
         self.json_schema = json_schema
         self.erros_registrados = set()
         # self.service = GeradorService() # Removido
+        self.progress_callback = progress_callback
         os.makedirs(pasta_saida, exist_ok=True)
 
     def executar(self):
@@ -19,8 +20,14 @@ class GeradorMitUseCase:
             print("Nenhuma empresa encontrada para processar.")
             return
 
-        for nome_empresa in empresas: # Renomeado 'nome' para 'nome_empresa' para clareza
+        total_empresas = len(empresas)
+        for idx, nome_empresa in enumerate(empresas):
             try:
+                # Atualiza o progresso antes de processar cada empresa
+                if self.progress_callback:
+                    progresso = idx / total_empresas
+                    self.progress_callback(progresso)
+                
                 # O repositório agora retorna o objeto Mit completo
                 mit_obj = self.repository.carregar_dados(nome_empresa)
 
@@ -46,7 +53,7 @@ class GeradorMitUseCase:
                         self.erros_registrados.add(msg)
                         caminho_erro = os.path.join(self.pasta_saida, "erros_validacao.txt")
                         with open(caminho_erro, "a", encoding="utf-8") as f_erro:
-                            f_erro.write(msg + "\\n")
+                            f_erro.write(msg + "\n")
                     print(msg) # Adicionado print para feedback imediato no console
                     continue
 
@@ -72,4 +79,13 @@ class GeradorMitUseCase:
                 if erro_msg not in self.erros_registrados: # Evitar duplicar se já logado
                     self.erros_registrados.add(erro_msg)
                     with open(caminho_erro_critico, "a", encoding="utf-8") as f_critico:
-                        f_critico.write(erro_msg + "\\n")
+                        f_critico.write(erro_msg + "\n")
+            
+            # Atualiza o progresso após processar cada empresa
+            if self.progress_callback:
+                progresso = (idx + 1) / total_empresas
+                self.progress_callback(progresso)
+                
+        # Garante que chegue a 100% no final
+        if self.progress_callback:
+            self.progress_callback(1.0)
