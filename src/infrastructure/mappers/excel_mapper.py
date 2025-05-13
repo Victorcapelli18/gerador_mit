@@ -1,97 +1,241 @@
-from src.domain.entities.excel_data_entity import PeriodoApuracao, DadosIniciais, Debito, Suspensao
-from typing import List
-from datetime import datetime
+from typing import List, Dict, Any, Optional
+from datetime import datetime, timedelta
+import itertools
+
+from src.domain.entities.mit_entity import (
+    Mit,
+    PeriodoApuracao as PeriodoApuracaoEntity,
+    DadosIniciais as DadosIniciaisEntity,
+    Debitos as DebitosEntity,
+    Imposto as ImpostoEntity,
+    Debito as DebitoEntity,
+    Suspensao as SuspensaoEntity,
+    DebitoSuspeno as DebitoSuspenoEntity
+)
+from src.domain.entities.responsible_entity import (
+    ResponsavelApuracao,
+    TelefoneResponsavel,
+    RegistroCrc
+)
 
 class ExcelMapper:
 
-    def map_periodo_apuracao(self, dados: List[dict]) -> List[PeriodoApuracao]:
-        return [
-            PeriodoApuracao(
-                empresa=linha["Empresa"],
-                cnpj=linha["CNPJ"],
-                mes_apuracao=int(linha["MesApuracao"]),
-                ano_apuracao=int(linha["AnoApuracao"]),
-
-            )
-            for linha in dados
-        ]
-    
-    def map_dados_iniciais(self, dados: List[dict]) -> List[DadosIniciais]:
-        return [
-            DadosIniciais(
-                empresa=linha["Empresa"],
-                sem_movimento=self._to_bool(linha["SemMovimento"]),
-                qualificacao_pj=int(linha["QualificacaoPj"]),
-                tributacao_lucro=int(linha["TributacaoLucro"]),
-                variacoes_monetarias=int(linha["VariacoesMonetarias"]),
-                regime_pis_cofins=int(linha["RegimePisCofins"]),
-                cpf_responsavel=linha["CpfResponsavel"],
-                uf_registro=linha["UfRegistro"],
-                num_registro=linha["NumRegistro"],
-                ddd=int(linha["Ddd"]),
-                num_telefone=int(linha["NumTelefone"]),
-                email_responsavel=linha["EmailResponsavel"],
-
-            )
-            for linha in dados
-        ]
-    
-    def map_debitos(self, dados: List[dict]) -> List[Debito]:
-        return [
-            Debito(
-                empresa=linha["Empresa"],
-                imposto=linha["Imposto"],
-                id_debito=linha.get("IdDebito") or None,
-                codigo_debito=int(linha["CodigoDebito"]),
-                valor_debito=self._to_float(linha.get("ValorDebito")),
-                pa_debito=linha.get["PaDebito"] or None,
-                codigo_municipio_ouro=linha.get["CodigoMunicipioOuro"] or None,
-                cnpj_estabelecimento=linha.get["CnpjEstabelecimento"] or None,
-
-            )
-            for linha in dados
-        ]
-    
-    def map_suspensoes(self, dados: List[dict]) -> List[Suspensao]:
-        return [
-            Suspensao(
-                empresa=linha["Empresa"],
-                tipo_suspensao=linha["TipoSuspensao"],
-                motivo_suspensao=linha["MotivoSuspensao"],
-                com_deposito=self._to_bool_or_none(linha.get("ComDeposito")),
-                numero_processo=linha.get("NumeroProcesso") or None,
-                processo_terceiro=linha.get("ProcessoTerceiro") or None,
-                data_decisao=self._to_date_or_none(linha.get("DataDecisao")),
-                vara_judiciaria=linha.get("VaraJudiciaria") or None,
-                codigo_municipio_sj=linha.get("CodigoMunicipioSj") or None,
-                id_debito_suspenso=linha.get("IdDebitoSuspenso") or None,
-                valor_suspenso=self._to_float(linha.get("ValorSuspenso")),
-            )
-            for linha in dados
-        ]
-
-    # Métodos auxiliares
-
-    def _to_bool(self, value) -> bool:
-        return str(value).strip().lower() in ["1", "true", "sim"]
-
-    def _to_bool_or_none(self, value) -> bool | None:
-        if value in ["", None]:
+    def _to_str_or_none(self, value: Any) -> Optional[str]:
+        if value is None or str(value).strip() == "":
             return None
-        return self._to_bool(value)
+        return str(value).strip()
 
-    def _to_float(self, value) -> float | None:
+    def _to_int_or_none(self, value: Any) -> Optional[int]:
+        if value is None or str(value).strip() == "":
+            return None
         try:
-            return float(value)
+            return int(float(str(value).strip())) 
         except (ValueError, TypeError):
             return None
 
-    def _to_date_or_none(self, value) -> datetime | None:
-        if not value or str(value).strip() == "":
+    def _to_bool(self, value: Any) -> bool:
+        val_str = self._to_str_or_none(value)
+        if val_str is None:
+            return False
+        return val_str.lower() in ["1", "true", "sim", "s", "verdadeiro", "v"]
+
+    def _to_bool_or_none(self, value: Any) -> Optional[bool]:
+        val_str = self._to_str_or_none(value)
+        if val_str is None:
             return None
-        if isinstance(value, datetime):
-            return value
+        return val_str.lower() in ["1", "true", "sim", "s", "verdadeiro", "v"]
+
+    def _to_float(self, value: Any) -> Optional[float]:
+        val_str = self._to_str_or_none(value)
+        if val_str is None:
+            return None
         try:
-            return datetime.strptime(value, "%Y-%m-%d")
-        except ValueError:
+            return float(val_str.replace(',', '.'))
+        except (ValueError, TypeError):
             return None
+
+    def _parse_excel_date_to_timestamp_int(self, value: Any) -> Optional[int]:
+        if value is None or str(value).strip() == "":
+            return None
+        
+        if isinstance(value, datetime):
+            return int(value.timestamp())
+        
+        if isinstance(value, (int, float)):
+            try:
+                if value > 0 and value < 2958465:
+                    return int((datetime(1899, 12, 30) + timedelta(days=value)).timestamp())
+            except (TypeError, ValueError, OverflowError):
+                 pass
+
+        val_str = str(value).strip()
+        date_formats = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d")
+        dt_obj = None
+        for fmt in date_formats:
+            try:
+                dt_obj = datetime.strptime(val_str, fmt)
+                break
+            except ValueError:
+                continue
+        
+        return int(dt_obj.timestamp()) if dt_obj else None
+
+
+    def _get_single_row_data(self, data_list: List[dict], sheet_name: str) -> Optional[dict]:
+        if not data_list:
+            return None
+        return data_list[0]
+
+    def _map_responsavel_apuracao(self, row: dict) -> ResponsavelApuracao:
+        tel_responsavel = None
+        ddd = self._to_str_or_none(row.get("Ddd"))
+        num_telefone = self._to_str_or_none(row.get("NumTelefone"))
+        if ddd and num_telefone:
+            tel_responsavel = TelefoneResponsavel(ddd=ddd, num_telefone=num_telefone)
+
+        registro_crc = None
+        uf_registro = self._to_str_or_none(row.get("UfRegistro"))
+        num_registro = self._to_str_or_none(row.get("NumRegistro"))
+        if uf_registro and num_registro:
+            registro_crc = RegistroCrc(uf_registro=uf_registro, num_registro=num_registro)
+            
+        return ResponsavelApuracao(
+            cpf=str(row.get("CpfResponsavel", "")), 
+            tel_responsavel=tel_responsavel,
+            email_responsavel=self._to_str_or_none(row.get("EmailResponsavel")),
+            registro_crc=registro_crc
+        )
+
+    def _map_periodo_apuracao(self, row: dict) -> PeriodoApuracaoEntity:
+        return PeriodoApuracaoEntity(
+            mes_apuracao=self._to_int_or_none(row.get("MesApuracao")),
+            ano_apuracao=self._to_int_or_none(row.get("AnoApuracao"))
+        )
+
+    def _map_dados_iniciais(self, row: dict) -> DadosIniciaisEntity:
+        responsavel = self._map_responsavel_apuracao(row)
+        return DadosIniciaisEntity(
+            sem_movimento=self._to_bool(row.get("SemMovimento")),
+            qualificacao_pj=self._to_int_or_none(row.get("QualificacaoPj")),
+            tributacao_lucro=self._to_int_or_none(row.get("TributacaoLucro")),
+            variacoes_monetarias=self._to_int_or_none(row.get("VariacoesMonetarias")),
+            regime_pis_cofins=self._to_int_or_none(row.get("RegimePisCofins")),
+            responsavel_apuracao=responsavel
+        )
+
+    def _map_debitos_estrutura(self, debitos_data: List[dict]) -> DebitosEntity:
+        impostos_map: Dict[str, List[DebitoEntity]] = {}
+        
+        known_tax_fields_excel_to_entity = {
+            "IRPJ": "irpj", "CSLL": "csll", "IRRF": "irrf", "IPI": "ipi",
+            "IOF": "iof", "PIS/PASEP": "pis_pasep", "PIS": "pis_pasep", "PASEP": "pis_pasep",
+            "COFINS": "cofins",
+            "CONTRIBUIÇÕES DIVERSAS": "contribuicoes_diversas", "CONTRIBUICOES DIVERSAS": "contribuicoes_diversas",
+            "CPSS": "cpss"
+        }
+
+        for linha_debito in debitos_data:
+            imposto_nome_excel = self._to_str_or_none(linha_debito.get("Imposto"))
+            if not imposto_nome_excel:
+                continue 
+
+            imposto_nome_excel_upper = imposto_nome_excel.upper().strip()
+            entity_attr_name = known_tax_fields_excel_to_entity.get(imposto_nome_excel_upper)
+
+            if not entity_attr_name:
+                continue
+
+            debito = DebitoEntity(
+                id_debito=self._to_int_or_none(linha_debito.get("IdDebito")),
+                codigo_debito=str(linha_debito.get("CodigoDebito", "")), 
+                valor_debito=self._to_float(linha_debito.get("ValorDebito")),
+                ano_debito=self._to_int_or_none(linha_debito.get("PaDebito")), 
+                cnpj_scp=self._to_str_or_none(linha_debito.get("CnpjEstabelecimento")),
+            )
+            
+            if entity_attr_name not in impostos_map:
+                impostos_map[entity_attr_name] = []
+            impostos_map[entity_attr_name].append(debito)
+
+        debitos_entity_args = {"balanco_lucro_real": False}
+        for entity_field, tax_list in impostos_map.items():
+            debitos_entity_args[entity_field] = ImpostoEntity(lista_debitos=tax_list)
+        
+        all_entity_tax_fields = ["irpj", "csll", "irrf", "ipi", "iof", "pis_pasep", "cofins", "contribuicoes_diversas", "cpss"]
+        for field in all_entity_tax_fields:
+            if field not in debitos_entity_args:
+                debitos_entity_args[field] = ImpostoEntity()
+
+        return DebitosEntity(**debitos_entity_args)
+
+    def _map_lista_suspensoes(self, suspensoes_data: List[dict]) -> List[SuspensaoEntity]:
+        lista_suspensoes_final = []
+        
+        keyfunc = lambda x: (
+            self._to_str_or_none(x.get("NumeroProcesso")),
+            self._to_int_or_none(x.get("TipoSuspensao")),
+            self._to_int_or_none(x.get("MotivoSuspensao"))
+        )
+        suspensoes_data.sort(key=keyfunc)
+
+        for key_group, group_items_iter in itertools.groupby(suspensoes_data, key=keyfunc):
+            group_items = list(group_items_iter)
+            if not group_items:
+                continue
+            
+            primeira_linha_grupo = group_items[0]
+            
+            debitos_suspensos_list: List[DebitoSuspenoEntity] = []
+            for item_suspensao in group_items:
+                id_deb_susp = self._to_int_or_none(item_suspensao.get("IdDebitoSuspenso"))
+                val_susp = self._to_float(item_suspensao.get("ValorSuspenso"))
+                if id_deb_susp is not None and val_susp is not None:
+                     debitos_suspensos_list.append(
+                        DebitoSuspenoEntity(id_debito_suspeno=id_deb_susp, valor_suspenso=val_susp)
+                    )
+            
+            if not debitos_suspensos_list and not self._to_str_or_none(primeira_linha_grupo.get("NumeroProcesso")):
+                continue
+
+            suspensao = SuspensaoEntity(
+                tipo_suspensao=self._to_int_or_none(primeira_linha_grupo.get("TipoSuspensao")),
+                motivo_suspensao=self._to_int_or_none(primeira_linha_grupo.get("MotivoSuspensao")),
+                com_deposito=self._to_bool(primeira_linha_grupo.get("ComDeposito")),
+                numero_processo=str(primeira_linha_grupo.get("NumeroProcesso", "")),
+                processo_terceiro=self._to_bool_or_none(primeira_linha_grupo.get("ProcessoTerceiro")),
+                data_decisao=self._parse_excel_date_to_timestamp_int(primeira_linha_grupo.get("DataDecisao")),
+                vara_jucidiaria=self._to_int_or_none(primeira_linha_grupo.get("VaraJudiciaria")), 
+                codigo_municipio_sj=self._to_str_or_none(primeira_linha_grupo.get("CodigoMunicipioSj")),
+                lista_debitos_suspensos=debitos_suspensos_list
+            )
+            lista_suspensoes_final.append(suspensao)
+            
+        return lista_suspensoes_final
+
+    def map_to_mit(self, dados_empresa_por_aba: Dict[str, List[dict]]) -> Mit:
+        periodo_data_row = self._get_single_row_data(
+            dados_empresa_por_aba.get("PeriodoApuracao", []), "PeriodoApuracao"
+        )
+        dados_iniciais_row = self._get_single_row_data(
+            dados_empresa_por_aba.get("DadosIniciais", []), "DadosIniciais"
+        )
+        
+        debitos_data_list = dados_empresa_por_aba.get("Debitos", [])
+        suspensoes_data_list = dados_empresa_por_aba.get("ListaSuspensoes", [])
+
+        if periodo_data_row is None:
+            raise ValueError("Dados de 'PeriodoApuracao' são obrigatórios e não foram encontrados para a empresa.")
+        if dados_iniciais_row is None:
+            raise ValueError("Dados de 'DadosIniciais' são obrigatórios e não foram encontrados para a empresa.")
+
+        periodo_apuracao_obj = self._map_periodo_apuracao(periodo_data_row)
+        dados_iniciais_obj = self._map_dados_iniciais(dados_iniciais_row)
+        debitos_obj = self._map_debitos_estrutura(debitos_data_list)
+        lista_suspensoes_obj = self._map_lista_suspensoes(suspensoes_data_list)
+
+        return Mit(
+            periodo_apuracao=periodo_apuracao_obj,
+            dados_iniciais=dados_iniciais_obj,
+            debitos=debitos_obj,
+            lista_suspensoes=lista_suspensoes_obj
+        )

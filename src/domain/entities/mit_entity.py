@@ -1,26 +1,30 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from src.domain.entities.responsible_entity import ResponsavelApuracao
 from typing import List, Optional
 
 
 class PeriodoApuracao(BaseModel):
-    mes_apuracao: int = Field(..., ge=1, le=12)
-    ano_apuracao: int = Field(..., ge=2025)
+    model_config = ConfigDict(populate_by_name=True)
+
+    mes_apuracao: int = Field(..., alias="MesApuracao", ge=1, le=12)
+    ano_apuracao: int = Field(..., alias="AnoApuracao", ge=2025)
 
 
 class DadosIniciais(BaseModel):
-    sem_movimento: bool = Field(...)
-    qualificacao_pj: int = Field(..., ge=1, le=12)
-    tributacao_lucro: int =  Field(..., ge=1, le=7)
-    variacoes_monterias: int = Field(..., ge=1, le=3)
-    regime_pis_cofins: int = Field(..., ge=1, le=4)
-    responsavel_apuracao: ResponsavelApuracao
+    model_config = ConfigDict(populate_by_name=True)
+
+    sem_movimento: bool = Field(..., alias="SemMovimento")
+    qualificacao_pj: int = Field(..., alias="QualificacaoPj", ge=1, le=12)
+    tributacao_lucro: int =  Field(..., alias="TributacaoLucro", ge=1, le=7)
+    variacoes_monetarias: int = Field(..., alias="VariacoesMonetarias", ge=1, le=3)
+    regime_pis_cofins: int = Field(..., alias="RegimePisCofins", ge=1, le=4)
+    responsavel_apuracao: ResponsavelApuracao = Field(..., alias="ResponsavelApuracao")
 
 
 class Debito(BaseModel):
-    id_debito: int = Field(..., ge=1)
+    id_debito: Optional[int] = Field(None, ge=1)
     codigo_debito: str
-    valor_debito: float
+    valor_debito: Optional[float] = None
     id_evento_debito: Optional[int] = Field(None, ge=1, le=5)
     ano_postergado: Optional[int] = None
     trim_postergado: Optional[int] = Field(None, ge=1, le=4)
@@ -62,7 +66,9 @@ class Suspensao(BaseModel):
     
 
 class Mit(BaseModel):
-    periodo_apuracao: PeriodoApuracao
-    dados_iniciais: DadosIniciais
-    debitos: Debitos
-    lista_suspensoes: List[Suspensao] = []
+    model_config = ConfigDict(populate_by_name=True)
+
+    periodo_apuracao: PeriodoApuracao = Field(..., alias="PeriodoApuracao")
+    dados_iniciais: DadosIniciais = Field(..., alias="DadosIniciais")
+    debitos: Debitos = Field(..., alias="Debitos")
+    lista_suspensoes: List[Suspensao] = Field(default_factory=list, alias="ListaSuspensoes")
