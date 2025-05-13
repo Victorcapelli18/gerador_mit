@@ -55,11 +55,6 @@ class GeradorMitUseCase:
                 mes = str(mit_obj.periodo_apuracao.mes_apuracao).zfill(2)
                 periodo_str = f"{ano}{mes}"
                 
-                # Usar o CNPJ para o nome do arquivo seria mais único e padrão.
-                # Supondo que o CNPJ está em mit_obj.dados_iniciais.responsavel_apuracao.cpf ou similar,
-                # ou melhor, diretamente em um campo CNPJ da empresa se existir na entidade Mit.
-                # Por agora, manterei 'nome_empresa' como está no código original.
-                # Se 'nome_empresa' é o CNPJ, ótimo.
                 nome_arquivo = f"{nome_empresa}--MIT--{periodo_str}.json"
                 caminho_arquivo_saida = os.path.join(self.pasta_saida, nome_arquivo)
 
