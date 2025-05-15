@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import itertools
+import re
 
 from src.domain.entities.mit_entity import (
     Mit,
@@ -19,6 +20,9 @@ from src.domain.entities.responsible_entity import (
 )
 
 class ExcelMapper:
+    def __init__(self):
+        # Armazena o CNPJ encontrado na aba PeriodoApuracao
+        self.cnpj_encontrado = None
 
     def _to_str_or_none(self, value: Any) -> Optional[str]:
         if value is None or str(value).strip() == "":
@@ -107,6 +111,28 @@ class ExcelMapper:
         )
 
     def _map_periodo_apuracao(self, row: dict) -> PeriodoApuracaoEntity:
+        # Imprime as colunas disponíveis para debug
+        print(f"Colunas disponíveis em PeriodoApuracao: {list(row.keys())}")
+        
+        # O CNPJ estará na segunda coluna da aba PeriodoApuracao
+        cnpj = None
+        
+        # Tenta encontrar a coluna que contém o CNPJ (segunda coluna)
+        colunas = list(row.keys())
+        if len(colunas) >= 2:
+            # A segunda coluna deve conter o CNPJ
+            possivel_coluna_cnpj = colunas[1]
+            print(f"Coluna que pode conter CNPJ: {possivel_coluna_cnpj}")
+            valor = self._to_str_or_none(row.get(possivel_coluna_cnpj))
+            if valor:
+                print(f"Valor encontrado na possível coluna CNPJ: {valor}")
+                # Limpar para ter apenas números
+                cnpj_limpo = ''.join(filter(str.isdigit, valor))
+                if len(cnpj_limpo) >= 8:
+                    print(f"CNPJ extraído da segunda coluna: {cnpj_limpo}")
+                    # Armazenamos o CNPJ para uso posterior
+                    self.cnpj_encontrado = cnpj_limpo
+        
         return PeriodoApuracaoEntity(
             mes_apuracao=self._to_int_or_none(row.get("MesApuracao")),
             ano_apuracao=self._to_int_or_none(row.get("AnoApuracao"))
@@ -114,13 +140,67 @@ class ExcelMapper:
 
     def _map_dados_iniciais(self, row: dict) -> DadosIniciaisEntity:
         responsavel = self._map_responsavel_apuracao(row)
+        
+        # Usamos preferencialmente o CNPJ que já encontramos na aba PeriodoApuracao
+        cnpj = self.cnpj_encontrado
+        
+        # Se não encontramos antes, tentamos extrair de várias colunas possíveis
+        if not cnpj:
+            colunas_cnpj = [
+                "CNPJ", "Cnpj", "cnpj", "CnpjEmpresa", "cnpj_empresa", 
+                "CnpjEstabelecimento", "CnpjBase", "cnpj_base", "NrCnpj",
+                "NumCnpj", "numeroCnpj", "cnpj_contribuinte", "CnpjContribuinte"
+            ]
+            
+            # Imprimir todas as chaves disponíveis para debug
+            print(f"Colunas disponíveis em dados_iniciais: {list(row.keys())}")
+            
+            for coluna_possivel in colunas_cnpj:
+                if coluna_possivel in row and row[coluna_possivel]:
+                    valor = self._to_str_or_none(row[coluna_possivel])
+                    print(f"Encontrado na coluna {coluna_possivel}: {valor}")
+                    if valor:
+                        # Limpar o CNPJ para conter apenas números
+                        cnpj_limpo = ''.join(filter(str.isdigit, valor))
+                        if len(cnpj_limpo) >= 8:
+                            cnpj = cnpj_limpo
+                            print(f"CNPJ extraído: {cnpj}")
+                            break
+            
+            # Se não encontrou CNPJ nas colunas específicas, tenta extrair do nome da empresa
+            if not cnpj and "Empresa" in row:
+                nome_empresa = self._to_str_or_none(row.get("Empresa", ""))
+                if nome_empresa:
+                    print(f"Tentando extrair CNPJ do nome da empresa: {nome_empresa}")
+                    # Procura por padrões comuns de CNPJ (xx.xxx.xxx/xxxx-xx)
+                    padrao_cnpj = r'(\d{2}[\.\s]?\d{3}[\.\s]?\d{3}[\/\.\s]?\d{4}[-\.\s]?\d{2})'
+                    match = re.search(padrao_cnpj, nome_empresa)
+                    if match:
+                        cnpj_encontrado = match.group(1)
+                        cnpj_limpo = ''.join(filter(str.isdigit, cnpj_encontrado))
+                        if len(cnpj_limpo) >= 8:
+                            cnpj = cnpj_limpo
+                            print(f"CNPJ extraído do nome da empresa: {cnpj}")
+                    else:
+                        # Procura por qualquer sequência de 14 dígitos no nome da empresa
+                        padrao_numerico = r'(\d{14})'
+                        match = re.search(padrao_numerico, nome_empresa)
+                        if match:
+                            cnpj = match.group(1)
+                            print(f"Sequência numérica extraída do nome da empresa: {cnpj}")
+        
+        # Se encontramos o CNPJ, informamos que ele está sendo usado
+        if cnpj:
+            print(f"Usando CNPJ encontrado: {cnpj}")
+        
         return DadosIniciaisEntity(
             sem_movimento=self._to_bool(row.get("SemMovimento")),
             qualificacao_pj=self._to_int_or_none(row.get("QualificacaoPj")),
             tributacao_lucro=self._to_int_or_none(row.get("TributacaoLucro")),
             variacoes_monetarias=self._to_int_or_none(row.get("VariacoesMonetarias")),
             regime_pis_cofins=self._to_int_or_none(row.get("RegimePisCofins")),
-            responsavel_apuracao=responsavel
+            responsavel_apuracao=responsavel,
+            cnpj=cnpj
         )
 
     def _map_debitos_estrutura(self, debitos_data: List[dict]) -> DebitosEntity:
@@ -213,6 +293,9 @@ class ExcelMapper:
         return lista_suspensoes_final
 
     def map_to_mit(self, dados_empresa_por_aba: Dict[str, List[dict]]) -> Mit:
+        # Limpa o CNPJ encontrado entre diferentes chamadas
+        self.cnpj_encontrado = None
+        
         periodo_data_row = self._get_single_row_data(
             dados_empresa_por_aba.get("PeriodoApuracao", []), "PeriodoApuracao"
         )
@@ -232,6 +315,12 @@ class ExcelMapper:
         dados_iniciais_obj = self._map_dados_iniciais(dados_iniciais_row)
         debitos_obj = self._map_debitos_estrutura(debitos_data_list)
         lista_suspensoes_obj = self._map_lista_suspensoes(suspensoes_data_list)
+
+        # Log para garantir que o CNPJ foi encontrado
+        if dados_iniciais_obj.cnpj:
+            print(f"CNPJ final utilizado: {dados_iniciais_obj.cnpj}")
+        else:
+            print("ATENÇÃO: Nenhum CNPJ foi encontrado para esta empresa!")
 
         return Mit(
             periodo_apuracao=periodo_apuracao_obj,

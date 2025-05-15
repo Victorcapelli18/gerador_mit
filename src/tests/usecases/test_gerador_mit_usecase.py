@@ -56,7 +56,7 @@ class TestGeradorMitUseCase(unittest.TestCase):
         mock_mit.periodo_apuracao = mock_periodo
         
         # Configurar o método gerar_nome_arquivo
-        mock_mit.gerar_nome_arquivo.return_value = "EMPRESA_TESTE--MIT--202503.json"
+        mock_mit.gerar_nome_arquivo.return_value = "12345678-MIT-202503.json"
         
         return mock_mit
     
@@ -94,7 +94,7 @@ class TestGeradorMitUseCase(unittest.TestCase):
         mock_validar_json.assert_called_once()
         
         # Verificar se o arquivo foi criado
-        caminho_arquivo = os.path.join(self.temp_dir, "EMPRESA_TESTE--MIT--202503.json")
+        caminho_arquivo = os.path.join(self.temp_dir, "12345678-MIT-202503.json")
         self.assertTrue(os.path.exists(caminho_arquivo))
         
         # Verificar o conteúdo do arquivo

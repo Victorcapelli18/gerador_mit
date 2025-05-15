@@ -118,8 +118,8 @@ class TestMit(unittest.TestCase):
         self.assertFalse(mit_sem_debitos.tem_debitos())
     
     def test_gerar_nome_arquivo(self):
-        nome_arquivo = self.mit.gerar_nome_arquivo("EMPRESA_TESTE")
-        self.assertEqual(nome_arquivo, "EMPRESA_TESTE--MIT--202503.json")
+        nome_arquivo = self.mit.gerar_nome_arquivo("12345678901234")
+        self.assertEqual(nome_arquivo, "12345678-MIT-202503.json")
 
 
 if __name__ == "__main__":

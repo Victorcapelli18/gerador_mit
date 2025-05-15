@@ -30,6 +30,7 @@ class DadosIniciais(BaseModel):
     variacoes_monetarias: int = Field(..., alias="VariacoesMonetarias", ge=1, le=3)
     regime_pis_cofins: int = Field(..., alias="RegimePisCofins", ge=1, le=4)
     responsavel_apuracao: ResponsavelApuracao = Field(..., alias="ResponsavelApuracao")
+    cnpj: Optional[str] = Field(None, alias="Cnpj")
 
 
 class Debito(BaseModel):
@@ -129,7 +130,7 @@ class Mit(BaseModel):
         """Retorna o valor total suspenso."""
         return sum(suspensao.valor_total_suspenso() for suspensao in self.lista_suspensoes)
     
-    def gerar_nome_arquivo(self, nome_empresa: str) -> str:
-        """Gera o nome do arquivo para esta declaração MIT."""
+    def gerar_nome_arquivo(self, cnpj: str) -> str:
         periodo_str = self.periodo_apuracao.periodo_formatado()
-        return f"{nome_empresa}--MIT--{periodo_str}.json"
+        cnpj_raiz = cnpj[:8]  # Extrai os 8 primeiros dígitos (CNPJ raiz)
+        return f"{cnpj_raiz}-MIT-{periodo_str}.json"
