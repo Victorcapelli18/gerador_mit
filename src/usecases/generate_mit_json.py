@@ -17,7 +17,6 @@ class GeradorMitUseCase:
         self.progress_callback = progress_callback
         os.makedirs(pasta_saida, exist_ok=True)
 
-
     def executar(self):
         empresas = self.repository.obter_empresas()
         if not empresas:
@@ -91,7 +90,6 @@ class GeradorMitUseCase:
         if self.progress_callback:
             self.progress_callback(1.0)
 
-
     def _extrair_cnpj_de_debitos(self, mit_obj: MitEntity) -> Optional[str]:
 
         cnpjs_encontrados = []
@@ -121,7 +119,6 @@ class GeradorMitUseCase:
         
         return None
     
-
     def _obter_cnpj_fallback(self, mit_obj: MitEntity, nome_empresa: str) -> str:
         cnpj = self._extrair_cnpj_de_debitos(mit_obj)
         if cnpj:

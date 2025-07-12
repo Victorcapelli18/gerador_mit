@@ -12,7 +12,7 @@ class ExcelMitRepository(MitRepositoryInterface):
         self.dados = self.adapter.carregar_planilha_excel(caminho_arquivo)
 
 
-    def obter_empresas(self) -> List[str]:
+    def obter_empresas(self) -> list[str]:
         return list(set(
             linha["Empresa"]
             for linha in self.dados.get("DadosIniciais", [])

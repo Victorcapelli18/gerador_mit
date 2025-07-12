@@ -5,7 +5,7 @@ from src.domain.entities.mit_entity import MitEntity
 
 class MitRepositoryInterface(ABC):
     @abstractmethod
-    def obter_empresas(self) -> List[str]:
+    def obter_empresas(self) -> list[str]:
         """Obtém a lista de CNPJs das empresas."""
         pass
 

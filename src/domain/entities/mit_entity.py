@@ -19,7 +19,7 @@ class PeriodoApuracaoEntity(BaseModel):
         hoje = datetime.datetime.today()
         return (self.ano_apuracao > hoje.year or
                 (self.ano_apuracao == hoje.year and self.mes_apuracao >= hoje.month))
-    
+
 
 class DadosIniciaisEntity(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -48,10 +48,10 @@ class DebitoEntity(BaseModel):
     def eh_postergado(self) -> bool:
         """Verifica se o débito é postergado."""
         return self.ano_postergado is not None and self.trim_postergado is not None
-    
+
 
 class ImpostoEntity(BaseModel):
-    lista_debitos: List[DebitoEntity] = []
+    lista_debitos: list[DebitoEntity] = []
 
     def valor_total(self) -> float:
         """Calcula o valor total dos débitos deste imposto."""
@@ -60,6 +60,7 @@ class ImpostoEntity(BaseModel):
     def adicionar_debito(self, debito: DebitoEntity) -> None:
         """Adiciona um débito à lista de débitos do imposto."""
         self.lista_debitos.append(debito)
+
 
 class DebitosEntity(BaseModel):
     balanco_lucro_real: bool
@@ -84,7 +85,7 @@ class DebitosEntity(BaseModel):
                 self.cofins.valor_total() +
                 self.contribuicoes_diversas.valor_total() +
                 self.cpss.valor_total())
-    
+
 
 class DebitoSuspensoEntity(BaseModel):
     id_debito_suspenso: int = Field(..., ge=1)
@@ -100,7 +101,7 @@ class SuspensaoEntity(BaseModel):
     data_decisao: Optional[int]  = None
     vara_judiciaria: Optional[int] = Field(..., ge=1)
     codigo_municipio_sj: Optional[str] = None
-    lista_debitos_suspensos: List[DebitoSuspensoEntity]
+    lista_debitos_suspensos: list[DebitoSuspensoEntity]
     def valor_total_suspenso(self) -> float:
         """Calcula o valor total dos débitos suspensos."""
         return sum(debito.valor_suspenso for debito in self.lista_debitos_suspensos)
@@ -112,7 +113,7 @@ class MitEntity(BaseModel):
     periodo_apuracao: PeriodoApuracaoEntity = Field(..., alias="PeriodoApuracao")
     dados_iniciais: DadosIniciaisEntity = Field(..., alias="DadosIniciais")
     debitos: DebitosEntity = Field(..., alias="Debitos")
-    lista_suspensoes: List[SuspensaoEntity] = Field(default_factory=list, alias="ListaSuspensoes")
+    lista_suspensoes: list[SuspensaoEntity] = Field(default_factory=list, alias="ListaSuspensoes")
 
     def eh_sem_movimento(self) -> bool:
         """Verifica se o MIT é sem movimento."""

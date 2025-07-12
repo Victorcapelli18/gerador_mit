@@ -84,7 +84,7 @@ class ExcelMapper:
         
         return int(dt_obj.timestamp()) if dt_obj else None
     
-    def _get_single_row_data(self, data_list: List[Dict], sheet_name: str) -> Optional[Dict]:
+    def _get_single_row_data(self, data_list: list[Dict], sheet_name: str) -> Optional[Dict]:
         if not data_list:
             return None
         return data_list[0]
@@ -202,8 +202,8 @@ class ExcelMapper:
             cnpj=cnpj
         )
     
-    def _map_debitos_estrutura(self, debitos_data: List[dict]) -> DebitosEntity:
-        impostos_map: Dict[str, List[DebitoEntity]] = {}
+    def _map_debitos_estrutura(self, debitos_data: list[dict]) -> DebitosEntity:
+        impostos_map: Dict[str, list[DebitoEntity]] = {}
 
         known_tax_fields_excel_to_entity = {
             "IRPJ": "irpj", "CSLL": "csll", "IRRF": "irrf", "IPI": "ipi",
@@ -250,7 +250,7 @@ class ExcelMapper:
 
         return DebitosEntity(**debitos_entity_args)
     
-    def _map_lista_suspensoes(self, suspensoes_data: List[dict]) -> List[SuspensaoEntity]:
+    def _map_lista_suspensoes(self, suspensoes_data: list[dict]) -> list[SuspensaoEntity]:
         lista_suspensoes_final = []
 
         keyfunc = lambda x: (
@@ -261,13 +261,13 @@ class ExcelMapper:
         suspensoes_data.sort(key=keyfunc)
 
         for key_group, group_itens_iter in itertools.groupby(suspensoes_data, key=keyfunc):
-            group_items = List(group_itens_iter)
+            group_items = list(group_itens_iter)
             if not group_items:
                 continue
 
             primeira_linha_grupo = group_items[0]
 
-            debitos_suspensos_list = List[DebitoSuspensoEntity] = []
+            debitos_suspensos_list: list[DebitoSuspensoEntity] = []
             for item_suspensao in group_items:
                 id_deb_susp = self._to_int_or_none(item_suspensao.get("IdDebitoSuspenso"))
                 val_susp = self._to_float(item_suspensao.get("ValorSuspenso"))
@@ -294,7 +294,7 @@ class ExcelMapper:
 
         return lista_suspensoes_final
     
-    def map_to_mit(self, dados_empresa_por_aba: Dict[str, List[Dict]]) -> MitEntity:
+    def map_to_mit(self, dados_empresa_por_aba: Dict[str, list[Dict]]) -> MitEntity:
         # Limpa o CNPJ encontrado entre diferentes chamadas
         self.cnpj_encontrado = None
 
