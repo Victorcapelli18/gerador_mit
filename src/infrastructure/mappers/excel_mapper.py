@@ -84,7 +84,7 @@ class ExcelMapper:
         
         return int(dt_obj.timestamp()) if dt_obj else None
     
-    def _get_single_row_data(self, data_list: list[Dict], sheet_name: str) -> Optional[Dict]:
+    def _get_single_row_data(self, data_list: List[Dict], sheet_name: str) -> Optional[Dict]:
         if not data_list:
             return None
         return data_list[0]
