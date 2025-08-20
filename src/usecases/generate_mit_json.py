@@ -6,6 +6,8 @@ from src.infrastructure.adapters.json_validator import validar_json
 from src.domain.entities.mit_entity import MitEntity
 from src.domain.repositories.mit_repository_interface import MitRepositoryInterface
 from typing import Optional, Callable, Dict
+from .generate_mit_json_dto import GenerateMitJsonInputDTO, GenerateMitJsonOutputDTO
+from src.infrastructure.mappers.dto_to_entity_mapper import map_dto_to_entity
 
 class GeradorMitUseCase:
     def __init__(self, repository: MitRepositoryInterface, pasta_saida: str, json_schema: dict,
@@ -175,5 +177,13 @@ class GeradorMitUseCase:
             with open(caminho_erro_critico, "a", encoding="utf-8") as f_critico:
                 f_critico.write(erro_msg + "\n")
 
+    def generate_mit_json(input_dto: GenerateMitJsonInputDTO) -> GenerateMitJsonOutputDTO:
+        try:
+            mit_entity = map_dto_to_entity(input_dto)
+            # Supondo que MitEntity tenha um método to_json()
+            mit_json = mit_entity.to_json() if hasattr(mit_entity, "to_json") else mit_entity.__dict__
+            return GenerateMitJsonOutputDTO(mit_json=mit_json)
+        except Exception as e:
+            return GenerateMitJsonOutputDTO(mit_json={}, errors=[str(e)])
 
-                
+
