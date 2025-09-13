@@ -180,7 +180,6 @@ class GeradorMitUseCase:
     def generate_mit_json(input_dto: GenerateMitJsonInputDTO) -> GenerateMitJsonOutputDTO:
         try:
             mit_entity = map_dto_to_entity(input_dto)
-            # Supondo que MitEntity tenha um método to_json()
             mit_json = mit_entity.to_json() if hasattr(mit_entity, "to_json") else mit_entity.__dict__
             return GenerateMitJsonOutputDTO(mit_json=mit_json)
         except Exception as e:
